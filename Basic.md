@@ -21,7 +21,8 @@ explicit initialization in source code.
 - Heap: Shared by all threads, shared libraries, and dynamically loaded modules in a process. Managed by malloc, 
 calloc, realloc, and free
 
-- Stack: Located in the higher parts of the memory. A "stack pointer" register tracks the top of the stack.
+- Stack: LIFO. Located in the higher parts of the memory. A "stack pointer" register tracks the top of the stack.
+For local data storage.
 
 [Reference]
 
