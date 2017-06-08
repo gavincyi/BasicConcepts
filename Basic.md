@@ -55,3 +55,95 @@ in separate memory spaces.
 
 - [https://stackoverflow.com/questions/9701757/when-to-use-pipes-vs-when-to-use-shared-memory](https://stackoverflow.com/questions/9701757/when-to-use-pipes-vs-when-to-use-shared-memory)
 
+#### TCP vs UDP
+
+##### TCP
+
+- Guarantees that all sent packets will reach the destination in the correct order.
+
+- Acknowledgement packets sent back to the sender, and automatic retransmission.
+
+##### UDC
+
+- Communication is datagram oriented.
+
+- Datagrams reach destination and can arrive out of order or don't arrive at all.
+
+#### [Consumer and Producer Problem](https://en.wikipedia.org/wiki/Producer%E2%80%93consumer_problem)
+
+##### Using semaphore
+
+```
+semaphore fillCount = 0; // items produced
+semaphore emptyCount = BUFFER_SIZE; // remaining space
+
+procedure producer() {
+    while (true) {
+        item = produceItem();
+        down(emptyCount);
+        putItemIntoBuffer(item);
+        up(fillCount);
+    }
+}
+
+procedure consumer() {
+    while (true) {
+        down(fillCount);
+        item = removeItemFromBuffer();
+        up(emptyCount);
+        consumeItem(item);
+    }
+}
+```
+
+##### Using monitor
+
+```
+monitor ProducerConsumer {
+    int itemCount;
+    condition full;
+    condition empty;
+
+    procedure add(item) {
+        while (itemCount == BUFFER_SIZE) {
+            wait(full);
+        }
+
+        putItemIntoBuffer(item);
+        itemCount = itemCount + 1;
+
+        if (itemCount == 1) {
+            notify(empty);
+        }
+    }
+    procedure remove() {
+        while (itemCount == 0) {
+            wait(empty);
+        }
+
+        item = removeItemFromBuffer();
+        itemCount = itemCount - 1;
+
+        if (itemCount == BUFFER_SIZE - 1) {
+            notify(full);
+        }
+
+
+        return item;
+    }
+}
+
+procedure producer() {
+    while (true) {
+        item = produceItem();
+        ProducerConsumer.add(item);
+    }
+}
+
+procedure consumer() {
+    while (true) {
+        item = ProducerConsumer.remove();
+        consumeItem(item);
+    }
+}
+```
